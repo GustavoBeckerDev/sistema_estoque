@@ -27,23 +27,42 @@ $estoque =
         'nome' => 'Macarrão',
         'quantidade' => 10,
         'valor' => 22.50,
-        'validade' => new DateTime('2025-06-15')
+        'validade' => new DateTime('2025-05-31')
     ],
     [
         'nome' => 'Leite',
         'quantidade' => 15,
         'valor' => 8.90,
-        'validade' => new DateTime('2025-10-20')
+        'validade' => new DateTime('2025-06-01')
     ],
     [
         'nome' => 'Farinha de Trigo',
         'quantidade' => 8,
         'valor' => 31.50,
+        'validade' => new DateTime('2025-06-03')
+    ],
+    [
+        'nome' => 'Margarina Doriana',
+        'quantidade' => 25,
+        'valor' => 255.99,
+        'validade' => new DateTime('2025-06-21')
+    ],
+    [
+        'nome' => 'Bolacha da vaquinha',
+        'quantidade' => 12,
+        'valor' => 41.35,
+        'validade' => new DateTime('2025-06-25')
+    ],
+    [
+        'nome' => 'Doce de leite',
+        'quantidade' => 21,
+        'valor' => 189.99,
         'validade' => new DateTime('2025-06-21')
     ]
 ];
 
 $foraDaValidade = [];
+$promocao = [];
 
 function menu() 
 {
@@ -54,7 +73,8 @@ function menu()
     echo "2. Adicionar produto\n";
     echo "3. Alterar produto\n";
     echo "4. Listar produtos fora da validade\n";
-    echo "5. Remover produto\n";
+    echo "5. Lista produtos próximos do vencimento \n";
+    echo "6. Remover produto\n";
     echo "0. Sair\n";
     echo "Escolha uma opção: ";
     echo "\n";
@@ -128,17 +148,23 @@ function remover(&$estoque)
     }
 
     unset($estoque[$id]);
-    echo "Produto removido com sucesso!\n";
+    echo "\033[31m O produto {$estoque['nome']} foi removido com sucesso! \033[30\n";
 }
 
-function verificaValidade(&$estoque, &$foraDaValidade)
+function verificaValidade(&$estoque, &$foraDaValidade, &$promocao)
 {
     global $dataatual;
-    foreach ($estoque as $id => $produto){
-        if ($produto['validade'] < $dataatual) {
+    foreach ($estoque as $id => $produto) {
+        $diferenca = $dataatual->diff($produto['validade']);
+        $dias_para_vencer = $diferenca->days;
+
+        if ($diferenca->invert == 1) { 
             $foraDaValidade[] = $produto;
             echo "\033[31m ***** Produto {$produto['nome']} com o ID: $id está fora da validade e foi removido do estoque. \033[0m\n";
             unset($estoque[$id]);
+        } elseif ($diferenca->invert == 0 && $dias_para_vencer >= 1 && $dias_para_vencer <= 10) {
+            $promocao[] = $produto;
+            echo "\033[32m ***** Produto {$produto['nome']} com o ID: $id está perto do vencimento (em $dias_para_vencer dias) e foi adicionado à promoção. \033[0m\n";
         }
     }
 }
@@ -160,6 +186,23 @@ function listarforavalidade($foraDaValidade)
     }
 }
 
+function listarPromocao ($promocao)
+{
+   if (empty($promocao)) {
+        echo "---------------------------------------------------------------------\n";
+        echo "---------- A LISTA DE PRODUTOS NA PROMOÇÃO ESTÁ VAZIA ---------------\n";
+        echo "---------------------------------------------------------------------\n";
+        return;
+    }
+    
+    echo "\033[31m-----------------------------------------------------------------------------------\033[0m\n";
+    echo "\033[31m---------------------------- PRODUTOS NA PROMOÇÃO ---------------------------------\033[0m\n";
+    echo "\033[31m-----------------------------------------------------------------------------------\033[0m\n";
+    foreach ($promocao as $id => $produto) {
+        echo "ID: $id | Nome: {$produto['nome']} | Qtd: {$produto['quantidade']} | Valor: R$ {$produto['valor']} | Validade: " . $produto['validade']->format('d/m/Y') . "\n";
+    } 
+}
+
 //INICIO DO PROGRAMA, CHAMA A FUNÇÃO DE VERIFICAR VALIDADE E LOGO APÓS CHAMA O MENU NUM LOOP COM AS OPÇÕES QUE CHAMAM CADA FUNÇÃO:
 
 echo "\n";
@@ -167,7 +210,7 @@ echo "\033[32m-------------------- SISTEMA DE ESTOQUE --------------------\033[0
 echo "\n";
 echo "\033[33mAntes de iniciar o programa, vamos verificar se tem algum produto fora da validade no estoque. \033[0m\n";
 echo "\n";
-verificaValidade($estoque, $foraDaValidade);
+verificaValidade($estoque, $foraDaValidade, $promocao);
 
 do {
     menu();
@@ -187,6 +230,9 @@ do {
             listarforavalidade($foraDaValidade);
             break;
         case 5:
+            listarPromocao($promocao);
+            break;
+        case 6:
             remover($estoque);
             break;
         case 0:
