@@ -105,12 +105,24 @@ function listar($estoque)
     echo "----------------------------------------------------------\n";
     echo "\n";
 
-    $cods = array_column($estoque, 'cod');
+    //$cods = array_column($estoque, 'cod');
     // print_r($cods);
-    sort($cods);
+    // sort($cods);
     // print_r($cods);
-    array_multisort($estoque, $cods);
+    // array_multisort($estoque, $cods);
 
+    // FUNÇÃO USORT QUE TEM COMO PARÂMETRO O ARRAY ESTOQUE E LEVA UMA FUNCTION DE CALLBACK COM PARAMETRO $A E $B
+    // FAZ A COMPARAÇÃO COM O OPERADOR SPACESHIP <=> E ORDENA COM O UASORT (UASORT NAO REINDEXA O ARRAY DIFERENTE DO USORT)
+    // PRIMEIRO ORDENA O PRODUTO E LOGO APÓS ORDENA A DATA.
+    // OS RETURN SÃO OS CALLBACKS DA FUNCTION CRIADA LÁ EM CIMA, OBRIGATÓRIO USAR NESSE TIPO DE FUNÇÃO, NEM QUE SEJA NULO...
+    uasort($estoque, function($a, $b) {
+    $codCompare = $a['cod'] <=> $b ['cod'];
+        if ($codCompare !== 0){
+            return $codCompare;
+        }
+            return $a['validade'] <=> $b['validade'];
+    }
+    );
     // $validade = array_column($estoque, 'validade');
     // print_r($validade);
     // uasort($validade, 'datasordenadas');
@@ -121,21 +133,7 @@ function listar($estoque)
         echo "ID: $id | Codigo: {$produto['cod']} | Nome: {$produto['nome']} | Qtd: {$produto['quantidade']} | Valor: R$ {$produto['valor']} | Validade: " . $produto['validade']->format('d/m/Y') . "\n";
     }
 
-/*    $array = [
-        ['id' => 1, 'nome' => 'Maria', 'nasc' => '2012-05-01'],
-        ['id' => 3, 'nome' => 'Pedro', 'nasc' => '2004-06-04'],
-        ['id' => 2, 'nome' => 'Jonas', 'nasc' => '2008-07-12'],
-        ['id' => 6, 'nome' => 'Nicolas', 'nasc' => '2009-08-12'],
-        ['id' => 4, 'nome' => 'Antonia', 'nasc' => '2011-02-19'],
-        ['id' => 5, 'nome' => 'Franciele', 'nasc' => '2001-10-11'],
-        ['id' => 7, 'nome' => 'Franciele', 'nasc' => '2001-06-11'],
-    ];
 
-    $datas = array_column($array, 'nasc');
-    sort($datas);
-    print_r($datas);
-    array_multisort($array, $datas);
-    print_r($array);   */
 
 }
 
@@ -143,12 +141,9 @@ function adicionar(&$estoque)
 {
     global $dataatual;
     $cod = readline("Código do produto: ");
-    //  echo "Cod_dig: $cod ";
     $nome = '';
     foreach($estoque as $id => $produto) 
     {
-        // var_dump("Cod_for: {$produto['cod']}");
-        // var_dump("Nome_for: {$produto['nome']}");
         if ($cod == $produto['cod']){
           $nome = $produto['nome'];
         }
@@ -168,7 +163,7 @@ function adicionar(&$estoque)
     } else {
     $estoque[] = ['cod' => $cod, 'nome' => $nome, 'quantidade' => $quantidade, 'valor' => $valor, 'validade' => $validade];
         echo "\n";
-        echo "Produto adicionado com sucesso!\n";
+        echo "\033[33m----------Produto adicionado com sucesso!----------\033[0m\n";
         echo "\n";
     }
 }
@@ -248,16 +243,15 @@ function listarPromocao ($promocao)
         return;
     }
     
-    echo "\033[31m-----------------------------------------------------------------------------------\033[0m\n";
-    echo "\033[31m---------------------------- PRODUTOS NA PROMOÇÃO ---------------------------------\033[0m\n";
-    echo "\033[31m-----------------------------------------------------------------------------------\033[0m\n";
+    echo "\033[32m-----------------------------------------------------------------------------------\033[0m\n";
+    echo "\033[32m---------------------------- PRODUTOS NA PROMOÇÃO ---------------------------------\033[0m\n";
+    echo "\033[32m-----------------------------------------------------------------------------------\033[0m\n";
     foreach ($promocao as $id => $produto) {
         echo "ID: $id | Nome: {$produto['nome']} | Qtd: {$produto['quantidade']} | Valor: R$ {$produto['valor']} | Validade: " . $produto['validade']->format('d/m/Y') . "\n";
     } 
 }
 
 //INICIO DO PROGRAMA, CHAMA A FUNÇÃO DE VERIFICAR VALIDADE E LOGO APÓS CHAMA O MENU NUM LOOP COM AS OPÇÕES QUE CHAMAM CADA FUNÇÃO:
-
 echo "\n";
 echo "\033[32m-------------------- SISTEMA DE ESTOQUE --------------------\033[0m\n";
 echo "\n";
