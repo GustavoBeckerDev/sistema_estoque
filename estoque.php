@@ -106,22 +106,22 @@ function listar($estoque)
     echo "\n";
 
     $cods = array_column($estoque, 'cod');
-    print_r($cods);
+    // print_r($cods);
     sort($cods);
-    print_r($cods);
+    // print_r($cods);
     array_multisort($estoque, $cods);
 
-    $validade = array_column($estoque, 'validade');
+    // $validade = array_column($estoque, 'validade');
     // print_r($validade);
     // uasort($validade, 'datasordenadas');
     // print_r($validade);
-    array_multisort($estoque, $validade);
+    // array_multisort($estoque, $validade);
 
     foreach ($estoque as $id => $produto) {
         echo "ID: $id | Codigo: {$produto['cod']} | Nome: {$produto['nome']} | Qtd: {$produto['quantidade']} | Valor: R$ {$produto['valor']} | Validade: " . $produto['validade']->format('d/m/Y') . "\n";
     }
 
-    $array = [
+/*    $array = [
         ['id' => 1, 'nome' => 'Maria', 'nasc' => '2012-05-01'],
         ['id' => 3, 'nome' => 'Pedro', 'nasc' => '2004-06-04'],
         ['id' => 2, 'nome' => 'Jonas', 'nasc' => '2008-07-12'],
@@ -135,7 +135,7 @@ function listar($estoque)
     sort($datas);
     print_r($datas);
     array_multisort($array, $datas);
-    print_r($array);
+    print_r($array);   */
 
 }
 
