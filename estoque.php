@@ -11,6 +11,13 @@ $estoque =
         'valor' => 22.50,
         'validade' => new DateTime('2025-05-16')
     ],
+    [   
+        'cod' => 202515,
+        'nome' => 'Goiabada',
+        'quantidade' => 15,
+        'valor' => 42.50,
+        'validade' => new DateTime('2025-05-29')
+    ],
     [
         'cod' => 202502,
         'nome' => 'Feijão',
@@ -218,9 +225,13 @@ function remover(&$estoque)
         echo "Produto não encontrado.\n";
         return;
     }
-
-    echo "\033[31m O produto {$estoque['nome']} foi removido com sucesso! \033[30\n";
+    $produtoremovido = $estoque[$id]['nome'];
     unset($estoque[$id]);
+    echo "\n";
+    echo "\033[31m======================================================\033[0m\n";
+    echo "\033[31m O produto $produtoremovido foi removido com sucesso! \033[0m\n";
+    echo "\033[31m======================================================\033[0m\n";
+    echo "\n";
 }
 
 function verificaValidade(&$estoque, &$foraDaValidade, &$promocao)
@@ -244,7 +255,7 @@ function verificaValidade(&$estoque, &$foraDaValidade, &$promocao)
             if (!estaNaPromocao($promocao, $id)) {
             $promocao[$id] = $produto;
         }
-            echo "\033[32m ***** Produto {$produto['nome']} com o ID: $id está perto do vencimento (em $dias_para_vencer dias) e foi adicionado à promoção. \033[0m\n";
+            echo "\033[33m ***** Produto {$produto['nome']} com o ID: $id está perto do vencimento (em $dias_para_vencer dias) e foi adicionado à promoção. \033[0m\n";
         }
     }
 }
@@ -291,7 +302,7 @@ function estaNaPromocao($promocao, $id) {
 echo "\n";
 echo "\033[32m-------------------- SISTEMA DE ESTOQUE --------------------\033[0m\n";
 echo "\n";
-echo "\033[33mAntes de iniciar o programa, vamos verificar se tem algum produto fora da validade no estoque. \033[0m\n";
+echo "\033[35mAntes de iniciar o programa, vamos verificar se tem algum produto fora da validade no estoque. \033[0m\n";
 echo "\n";
 verificaValidade($estoque, $foraDaValidade, $promocao);
 
