@@ -1,6 +1,6 @@
 <?php
 
-$dataatual = new DateTime("");
+$dataatual = new DateTime();
 
 $estoque = 
 [
@@ -9,63 +9,63 @@ $estoque =
         'nome' => 'Arroz',
         'quantidade' => 10,
         'valor' => 22.50,
-        'validade' => new DateTime('2025-05-15')
+        'validade' => new DateTime('2025-05-16')
     ],
     [
         'cod' => 202502,
         'nome' => 'Feijão',
         'quantidade' => 15,
         'valor' => 8.90,
-        'validade' => new DateTime('2025-05-20')
+        'validade' => new DateTime('2025-05-21')
     ],
     [
         'cod' => 202503,
         'nome' => 'Açúcar',
         'quantidade' => 8,
         'valor' => 31.50,
-        'validade' => new DateTime('2025-05-21')
+        'validade' => new DateTime('2025-05-22')
     ],
     [
         'cod' => 202504,
         'nome' => 'Macarrão',
         'quantidade' => 10,
         'valor' => 22.50,
-        'validade' => new DateTime('2025-05-31')
+        'validade' => new DateTime('2025-06-08')
     ],
     [
         'cod' => 202505,
         'nome' => 'Leite',
         'quantidade' => 15,
         'valor' => 8.90,
-        'validade' => new DateTime('2025-06-01')
+        'validade' => new DateTime('2025-06-02')
     ],
     [
         'cod' => 202506,
         'nome' => 'Farinha de Trigo',
         'quantidade' => 8,
         'valor' => 31.50,
-        'validade' => new DateTime('2025-06-03')
+        'validade' => new DateTime('2025-06-04')
     ],
     [
         'cod' => 202507,
         'nome' => 'Margarina Doriana',
         'quantidade' => 25,
         'valor' => 255.99,
-        'validade' => new DateTime('2025-06-21')
+        'validade' => new DateTime('2025-06-22')
     ],
     [
         'cod' => 202508,
         'nome' => 'Bolacha da vaquinha',
         'quantidade' => 12,
         'valor' => 41.35,
-        'validade' => new DateTime('2025-06-25')
+        'validade' => new DateTime('2025-06-26')
     ],
     [
         'cod' => 202509,
         'nome' => 'Doce de leite',
         'quantidade' => 21,
         'valor' => 189.99,
-        'validade' => new DateTime('2025-06-21')
+        'validade' => new DateTime('2025-06-22')
     ]
 ];
 
@@ -88,7 +88,7 @@ function menu()
     echo "\n";
 }
 
-function listar($estoque) 
+function listar(&$estoque) 
 {
     if (empty($estoque)) {
         echo "\n";
@@ -115,7 +115,10 @@ function listar($estoque)
     // FAZ A COMPARAÇÃO COM O OPERADOR SPACESHIP <=> E ORDENA COM O UASORT (UASORT NAO REINDEXA O ARRAY DIFERENTE DO USORT)
     // PRIMEIRO ORDENA O PRODUTO E LOGO APÓS ORDENA A DATA.
     // OS RETURN SÃO OS CALLBACKS DA FUNCTION CRIADA LÁ EM CIMA, OBRIGATÓRIO USAR NESSE TIPO DE FUNÇÃO, NEM QUE SEJA NULO...
-    uasort($estoque, function($a, $b) {
+    // ANTES DE INICIAR A ORDENAÇÃO, EU PASSO A FUNÇÃO DE VERIFICA VALIDADE PARA REMOVER PRODUTOS E ADICIONAR A PROMOÇÃO
+
+    uasort($estoque, function($a, $b) 
+    {
     $codCompare = $a['cod'] <=> $b ['cod'];
         if ($codCompare !== 0){
             return $codCompare;
@@ -123,54 +126,57 @@ function listar($estoque)
             return $a['validade'] <=> $b['validade'];
     }
     );
-    // $validade = array_column($estoque, 'validade');
-    // print_r($validade);
-    // uasort($validade, 'datasordenadas');
-    // print_r($validade);
-    // array_multisort($estoque, $validade);
 
     foreach ($estoque as $id => $produto) {
         echo "ID: $id | Codigo: {$produto['cod']} | Nome: {$produto['nome']} | Qtd: {$produto['quantidade']} | Valor: R$ {$produto['valor']} | Validade: " . $produto['validade']->format('d/m/Y') . "\n";
     }
-
-
-
 }
 
-function adicionar(&$estoque) 
+function adicionar(&$estoque, &$promocao)
 {
-    global $dataatual;
+    $dataatual = new DateTime();
+    $dataatual->setTime(0, 0, 0);
+
     $cod = readline("Código do produto: ");
-    $nome = '';
-    foreach($estoque as $id => $produto) 
-    {
-        if ($cod == $produto['cod']){
-          $nome = $produto['nome'];
+    $nome = "";
+
+    foreach ($estoque as $produto) {
+        if ($cod == $produto['cod']) {
+            $nome = $produto['nome'];
         }
     }
-    if ($nome == ""){
-      $nome = readline("Nome do produto: ");
+    if ($nome == "") {
+        $nome = readline("Nome do produto: ");
     }
-    $quantidade = (int) readline("Quantidade: ");
-    $valor = (float) readline("Valor (ex: 10.50): ");
+    $quantidade = (int)readline("Quantidade: ");
+    $valor = (float)readline("Valor (ex: 10.50): ");
     $validadestr = readline("Data de validade Ex: AAAA-MM-DD: ");
     $validade = new DateTime($validadestr);
+    $validade->setTime(0, 0, 0);
 
-    if ($validade <= $dataatual){
+    $intervalo = $dataatual->diff($validade);
+    $dias_para_vencer = (int)$intervalo->format('%r%a');
+
+    if ($validade <= $dataatual) {
         echo "-----------------------------------------------------------------------------------\n";
         echo "Produto com validade vencida ou muito próxima, não pode ser adicionado ao estoque. \n";
         echo "-----------------------------------------------------------------------------------\n";
     } else {
-    $estoque[] = ['cod' => $cod, 'nome' => $nome, 'quantidade' => $quantidade, 'valor' => $valor, 'validade' => $validade];
-        echo "\n";
-        echo "\033[33m----------Produto adicionado com sucesso!----------\033[0m\n";
-        echo "\n";
+        $estoque[] = [
+            'cod' => $cod,
+            'nome' => $nome,
+            'quantidade' => $quantidade,
+            'valor' => $valor,
+            'validade' => $validade
+        ];
+
+        echo "\n\033[33m----------Produto adicionado com sucesso!----------\033[0m\n\n";
     }
 }
 
-function alterar(&$estoque) 
+function alterar(&$estoque, &$promocao) 
 {
-    global $dataatual;
+    $dataatual = new DateTime();
     listar($estoque);
     $id = (int) readline("Informe o ID do produto que deseja alterar: ");
     if (!isset($estoque[$id])) {
@@ -180,9 +186,29 @@ function alterar(&$estoque)
     $estoque[$id]['nome'] = readline("Alterar nome: ");
     $estoque[$id]['quantidade'] = (int) readline("Alterar quantidade: ");
     $estoque[$id]['valor'] = (float) readline("Alterar valor: ");
+    
+    $validadestr = readline("Data de validade Ex: AAAA-MM-DD: ");
+    $validade = new DateTime($validadestr);
+    
+    if ($validade <= $dataatual){
+        echo "-----------------------------------------------------------------------------------\n";
+        echo "Produto com validade vencida ou muito próxima, não pode ser adicionado ao estoque. \n";
+        echo "-----------------------------------------------------------------------------------\n";
+    } else {
+        $estoque[$id]['validade'] = $validade;
+        
+        $intervalo = $dataatual->diff($validade);
+        $diasRestantes = (int) $intervalo->format('%r%a');
+        
 
-
-
+        if ($diasRestantes <= 10) {
+            if (!estaNaPromocao($promocao, $id)) {
+                $promocao[$id] = $estoque[$id];
+                echo "Produto adicionado à promoção, faltam $diasRestantes dias para vencer.\n";
+            }
+        }
+    }
+    
     echo "Produto alterado com sucesso!\n";
 }
 
@@ -195,23 +221,31 @@ function remover(&$estoque)
         return;
     }
 
-    unset($estoque[$id]);
     echo "\033[31m O produto {$estoque['nome']} foi removido com sucesso! \033[30\n";
+    unset($estoque[$id]);
 }
 
 function verificaValidade(&$estoque, &$foraDaValidade, &$promocao)
 {
-    global $dataatual;
-    foreach ($estoque as $id => $produto) {
-        $diferenca = $dataatual->diff($produto['validade']);
-        $dias_para_vencer = $diferenca->days;
+    $dataatual = new DateTime();
+    $dataatual->setTime(0, 0, 0);  // ZERA AS HORAS/MINUTOS/SEGUNDO PARA A COMPARAÇÃO CORRETA COMPLETA EM DIAS
+    $promocao = [];
 
-        if ($diferenca->invert == 1) { 
+    foreach ($estoque as $id => $produto) {
+        $validade = clone $produto['validade'];
+        $validade->setTime(0, 0, 0); // ZERA TAMBÉM A VALIDADE ADICIONADA AO PRODUTO
+
+        $intervalo = $dataatual->diff($validade);
+        $dias_para_vencer = (int)$intervalo->format('%r%a'); // diferença em dias com sinal
+
+        if ($dias_para_vencer < 0) {
             $foraDaValidade[] = $produto;
             echo "\033[31m ***** Produto {$produto['nome']} com o ID: $id está fora da validade e foi removido do estoque. \033[0m\n";
             unset($estoque[$id]);
-        } elseif ($diferenca->invert == 0 && $dias_para_vencer >= 1 && $dias_para_vencer <= 10) {
-            $promocao[] = $produto;
+        } elseif ($dias_para_vencer >= 1 && $dias_para_vencer <= 10) {
+            if (!estaNaPromocao($promocao, $id)) {
+            $promocao[$id] = $produto;
+        }
             echo "\033[32m ***** Produto {$produto['nome']} com o ID: $id está perto do vencimento (em $dias_para_vencer dias) e foi adicionado à promoção. \033[0m\n";
         }
     }
@@ -251,6 +285,10 @@ function listarPromocao ($promocao)
     } 
 }
 
+function estaNaPromocao($promocao, $id) {
+    return isset($promocao[$id]);
+}
+
 //INICIO DO PROGRAMA, CHAMA A FUNÇÃO DE VERIFICAR VALIDADE E LOGO APÓS CHAMA O MENU NUM LOOP COM AS OPÇÕES QUE CHAMAM CADA FUNÇÃO:
 echo "\n";
 echo "\033[32m-------------------- SISTEMA DE ESTOQUE --------------------\033[0m\n";
@@ -265,13 +303,16 @@ do {
 
     switch ($opcao) {
         case 1:
-            listar($estoque);
+            verificaValidade($estoque, $foraDaValidade, $promocao);
+            listar($estoque, $promocao);
             break;
         case 2:
-            adicionar($estoque);
+            verificaValidade($estoque, $foraDaValidade, $promocao);
+            adicionar($estoque, $promocao);
             break;
         case 3:
-            alterar($estoque);
+            verificaValidade($estoque, $foraDaValidade, $promocao);
+            alterar($estoque, $promocao);
             break;
         case 4: 
             listarforavalidade($foraDaValidade);
