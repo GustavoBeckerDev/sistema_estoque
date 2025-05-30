@@ -199,7 +199,6 @@ function alterar(&$estoque, &$promocao)
         
         $intervalo = $dataatual->diff($validade);
         $diasRestantes = (int) $intervalo->format('%r%a');
-        
 
         if ($diasRestantes <= 10) {
             if (!estaNaPromocao($promocao, $id)) {
@@ -207,9 +206,8 @@ function alterar(&$estoque, &$promocao)
                 echo "Produto adicionado à promoção, faltam $diasRestantes dias para vencer.\n";
             }
         }
+        echo "Produto alterado com sucesso!\n";
     }
-    
-    echo "Produto alterado com sucesso!\n";
 }
 
 function remover(&$estoque) 
